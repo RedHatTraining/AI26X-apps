@@ -140,9 +140,9 @@ spec:
   port:
     targetPort: api
   wildcardPolicy: None
-  tls:
-    termination: edge
-    insecureEdgeTerminationPolicy: Redirect
+  # tls:
+  #   termination: edge
+  #   insecureEdgeTerminationPolicy: Redirect
 ---
 kind: Route
 apiVersion: route.openshift.io/v1
