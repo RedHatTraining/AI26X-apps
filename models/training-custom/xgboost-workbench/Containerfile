@@ -1,0 +1,7 @@
+FROM quay.io/modh/odh-generic-data-science-notebook:v2-20240319
+
+RUN echo "Installing XGBoost" && \
+    pip install --no-cache-dir xgboost==2.0.3
+
+RUN chmod -R g+w /opt/app-root/lib/python3.9/site-packages && \
+    fix-permissions /opt/app-root -P
