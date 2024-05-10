@@ -4,6 +4,9 @@ metadata:
   labels:
     opendatahub.io/dashboard: "true"
     opendatahub.io/managed: "true"
+  annotations:
+    opendatahub.io/connection-type: s3
+    opendatahub.io/display-name: s3-minio
   name: s3-minio
 type: Opaque
 stringData:
