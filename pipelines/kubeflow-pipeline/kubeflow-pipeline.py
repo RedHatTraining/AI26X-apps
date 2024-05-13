@@ -12,24 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from kfp import dsl
 from kfp import components
+from kfp import dsl
+
+import random
 
 
 def random_num(low: int, high: int) -> int:
     """Generate a random number between low and high."""
-    import random
-    result = random.randint(low, high)
-    print(result)
-    return result
+    return random.randint(low, high)
 
 
 def flip_coin() -> str:
     """Flip a coin and output heads or tails randomly."""
-    import random
-    result = 'heads' if random.randint(0, 1) == 0 else 'tails'
-    print(result)
-    return result
+    return 'heads' if random.randint(0, 1) == 0 else 'tails'
 
 
 def print_msg(msg: str):
@@ -37,35 +33,34 @@ def print_msg(msg: str):
     print(msg)
 
 
+# TODO: Create a component from the flip_coin function
 flip_coin_op = components.create_component_from_func(
-    flip_coin, base_image='python:alpine3.6')
+    flip_coin, base_image='registry.access.redhat.com/ubi9/python-39')
+
+# TODO: Create a component from the print_msg function
 print_op = components.create_component_from_func(
-    print_msg, base_image='python:alpine3.6')
+    print_msg, base_image='registry.access.redhat.com/ubi9/python-39')
+
+# TODO: Create a component from the random_num function
 random_num_op = components.create_component_from_func(
-    random_num, base_image='python:alpine3.6')
+    random_num, base_image='registry.access.redhat.com/ubi9/python-39')
 
 
+# TODO: Define a pipeline
 @dsl.pipeline(
     name='coin-toss-pipeline',
-    description='A simple pipeline using Kubeflow pipelines'
+    description='A simple pipeline'
 )
 def flipcoin_pipeline():
     flip = flip_coin_op()
+    # TODO: Add pipeline logic
     with dsl.Condition(flip.output == 'heads', 'Heads result'):
-        random_num_head = random_num_op(0, 9)
-        with dsl.Condition(random_num_head.output > 5, 'Random num > 5'):
-            print_op('heads and %s > 5!' % random_num_head.output)
-        with dsl.Condition(random_num_head.output <= 5, 'Random num <= 5'):
-            print_op('heads and %s <= 5!' % random_num_head.output)
+        print_op('Heads!')
+        random_number = random_num_op(0, 9)
+        with dsl.Condition(random_number.output > 7):
+            print_op('A high value!')
+        with dsl.Condition(random_number.output <= 7):
+            print_op('A low value!')
 
     with dsl.Condition(flip.output == 'tails', 'Tails result'):
-        random_num_tail = random_num_op(10, 19)
-        with dsl.Condition(random_num_tail.output > 15, 'Random num > 15'):
-            print_op('tails and %s > 15!' % random_num_tail.output)
-        with dsl.Condition(random_num_tail.output <= 15, 'Random num <= 15'):
-            print_op('tails and %s <= 15!' % random_num_tail.output)
-
-
-if __name__ == '__main__':
-    from kfp_tekton.compiler import TektonCompiler
-    TektonCompiler().compile(flipcoin_pipeline, __file__.replace('.py', '.yaml'))
+        print_op('Tails result')
