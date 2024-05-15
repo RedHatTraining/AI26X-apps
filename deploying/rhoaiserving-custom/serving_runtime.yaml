@@ -24,6 +24,7 @@ spec:
         - --model_name={{.Name}}
         - --model_dir=/mnt/models
         - --http_port=8080
+        - --enable_docs=True
       resources:
         requests:
           cpu: "1"
