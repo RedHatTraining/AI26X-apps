@@ -94,7 +94,7 @@ timing-asgi==0.3.1
 typing_extensions==4.11.0
 tzdata==2024.1
 uc-micro-py==1.0.3
-urllib3==2.2.1
+urllib3==1.26.18
 uvicorn==0.21.1
 uvloop==0.19.0
 virtualenv==20.26.2
