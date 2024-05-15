@@ -1,14 +1,16 @@
-from os import environ
+import os
 import boto3
+import pandas as pd
+from datetime import datetime
 
 
-def ingest_data(data_folder="./data"):
+def ingest_data(data_folder="/data"):
     print("Commencing data ingestion.")
 
-    s3_endpoint_url = environ.get("AWS_S3_ENDPOINT")
-    s3_access_key = environ.get("AWS_ACCESS_KEY_ID")
-    s3_secret_key = environ.get("AWS_SECRET_ACCESS_KEY")
-    s3_bucket_name = environ.get("AWS_S3_BUCKET")
+    s3_endpoint_url = os.environ.get("AWS_S3_ENDPOINT")
+    s3_access_key = os.environ.get("AWS_ACCESS_KEY_ID")
+    s3_secret_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    s3_bucket_name = os.environ.get("AWS_S3_BUCKET")
 
     print(
         f"Downloading data"
@@ -27,8 +29,16 @@ def ingest_data(data_folder="./data"):
     response = s3_client.list_objects_v2(Bucket=s3_bucket_name, Prefix=data_folder)
     files = [obj["Key"] for obj in response["Contents"]]
 
+    df = pd.DataFrame(columns=["Date", "Tickets"])
+
     for file in files:
         s3_client.download_file(s3_bucket_name, file, f"{data_folder}/{file}")
+        date = datetime.strptime(os.path.splitext(file)[0], "%Y%m%d").date()
+        tickets_df = pd.read_csv(f"{data_folder}/{file}")
+        n_tickets = len(tickets_df)
+        df = df.append({"Date": date, "Tickets": n_tickets}, ignore_index=True)
+
+    df.to_csv(f"{data_folder}/data.csv")
 
     print("Finished data ingestion.")
 
