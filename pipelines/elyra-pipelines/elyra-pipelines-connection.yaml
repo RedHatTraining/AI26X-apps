@@ -11,7 +11,7 @@ metadata:
 type: Opaque
 stringData:
   AWS_ACCESS_KEY_ID: minio
-  AWS_DEFAULT_REGION: any
+  AWS_DEFAULT_REGION: us-east-1
   AWS_S3_ENDPOINT: http://minio-minio.apps.ocp4.example.com
-  AWS_S3_BUCKET: models-bucket
+  AWS_S3_BUCKET: elyra-pipelines
   AWS_SECRET_ACCESS_KEY: minio123
