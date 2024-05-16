@@ -55,9 +55,8 @@ class SKLearnModel(Model):
     ) -> Union[Dict, InferResponse]:
         try:
             instances = get_predict_input(payload)
-            # result = self._model.predict(instances)
-            # return get_predict_response(payload, result, self.name)
-            raise InferenceError("Use the model to make predictions to finish the exercise")
+            result = self._model.predict(instances)
+            return get_predict_response(payload, result, self.name)
         except Exception as e:
             raise InferenceError(str(e))
 

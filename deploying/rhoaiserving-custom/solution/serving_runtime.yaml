@@ -8,7 +8,7 @@ spec:
   annotations:
     prometheus.kserve.io/port: '8080'
     prometheus.kserve.io/path: "/metrics"
-    openshift.io/display-name: "My Scikit-learn server"
+    openshift.io/display-name: "My Sklearn"
   supportedModelFormats:
     - name: sklearn
       version: "1"
@@ -19,7 +19,7 @@ spec:
     - v2
   containers:
     - name: kserve-container
-      image: <CHANGE_ME>
+      image: registry.ocp4.example.com:8443/developer/sklearn-model-server
       args:
         - --model_name={{.Name}}
         - --model_dir=/mnt/models
