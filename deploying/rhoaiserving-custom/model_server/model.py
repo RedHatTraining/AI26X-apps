@@ -28,6 +28,14 @@ from kserve import Model, model_server
 MODEL_EXTENSIONS = (".joblib", ".pkl", ".pickle")
 
 
+def _find_model_path(model_dir_path):
+    for file in os.listdir(model_dir_path):
+        file_path = os.path.join(model_dir_path, file)
+        if os.path.isfile(file_path) and file.endswith(MODEL_EXTENSIONS):
+            return model_dir_path / file
+    raise ModelMissingError(model_dir_path)
+
+
 class SKLearnModel(Model):
     def __init__(self, name: str, model_dir: str):
         super().__init__(name)
@@ -36,15 +44,9 @@ class SKLearnModel(Model):
         self.ready = False
 
     def load(self) -> bool:
-        model_path = pathlib.Path(Storage.download(self.model_dir))
-        model_files = []
-        for file in os.listdir(model_path):
-            file_path = os.path.join(model_path, file)
-            if os.path.isfile(file_path) and file.endswith(MODEL_EXTENSIONS):
-                model_files.append(model_path / file)
-        if len(model_files) == 0:
-            raise ModelMissingError(model_path)
-        self._model = joblib.load(model_files[0])
+        model_dir_path = pathlib.Path(Storage.download(self.model_dir))
+        model_path = _find_model_path(model_dir_path)
+        self._model = joblib.load(model_path)
         self.ready = True
         return self.ready
 
