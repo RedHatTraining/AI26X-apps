@@ -3,7 +3,7 @@ kind: ServingRuntime
 labels:
   opendatahub.io/dashboard: "true"
 metadata:
-  name: kserve-sklearnserver
+  name: sklearn-server
 spec:
   annotations:
     prometheus.kserve.io/port: '8080'
