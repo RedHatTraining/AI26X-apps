@@ -1,6 +1,7 @@
 import os
 import boto3
 import pandas as pd
+import re
 from datetime import datetime
 
 
@@ -32,15 +33,15 @@ def ingest_data(data_folder="/data"):
 
     for obj in response.get("Contents", []):
         key = obj["Key"]
-        s3_client.download_file(s3_bucket_name, key, f"{key}")
         file_name = os.path.basename(key)
-        date = datetime.strptime(os.path.splitext(file_name)[0], "%Y%m%d").date()
-        tickets_df = pd.read_csv(f"{data_folder}/{file_name}")
-        n_tickets = len(tickets_df)
-        new_row = pd.DataFrame({"Date": [date], "Tickets": [n_tickets]})
-        df = pd.concat([df, new_row], ignore_index=True)
-
-    df.to_csv(f"./{data_folder}/data.csv")
+        if re.match(r"^\d+\.csv$"):
+            s3_client.download_file(s3_bucket_name, key, f"/{key}")
+            date = datetime.strptime(os.path.splitext(file_name)[0], "%Y%m%d").date()
+            tickets_df = pd.read_csv(f"{data_folder}/{file_name}")
+            n_tickets = len(tickets_df)
+            new_row = pd.DataFrame({"Date": [date], "Tickets": [n_tickets]})
+            df = pd.concat([df, new_row], ignore_index=True)
+            df.to_csv(f"{data_folder}/data.csv")
 
     print("Finished data ingestion.")
 
