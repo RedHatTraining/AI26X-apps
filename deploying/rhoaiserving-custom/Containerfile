@@ -1,0 +1,9 @@
+FROM registry.access.redhat.com/ubi9/python-39
+
+COPY requirements.txt /opt/app-root/src
+
+RUN pip install -U pip && pip install -r requirements.txt
+
+COPY model_server model_server
+
+ENTRYPOINT ["python", "-m", "model_server.model"]
