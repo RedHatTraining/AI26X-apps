@@ -41,7 +41,7 @@ def ingest_data(data_folder="/data"):
             n_tickets = len(tickets_df)
             new_row = pd.DataFrame({"Date": [date], "Tickets": [n_tickets]})
             df = pd.concat([df, new_row], ignore_index=True)
-            df.to_csv(f"{data_folder}/data.csv")
+            df.to_csv(f"{data_folder}/data.csv", index=False)
 
     print("Finished data ingestion.")
 
