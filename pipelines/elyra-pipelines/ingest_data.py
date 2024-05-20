@@ -34,7 +34,7 @@ def ingest_data(data_folder="/data"):
     for obj in response.get("Contents", []):
         key = obj["Key"]
         file_name = os.path.basename(key)
-        if re.match(r"^\d+\.csv$"):
+        if re.match(r"^\d+\.csv$", file_name):
             s3_client.download_file(s3_bucket_name, key, f"/{key}")
             date = datetime.strptime(os.path.splitext(file_name)[0], "%Y%m%d").date()
             tickets_df = pd.read_csv(f"{data_folder}/{file_name}")
