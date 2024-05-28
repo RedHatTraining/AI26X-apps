@@ -2,9 +2,9 @@ import pandas as pd
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 
-def ticket_forecast(data_folder="/data"):
+def ticket_forecast(file_name="clean-data.csv"):
 
-    data = pd.read_csv(f"{data_folder}/clean-data.csv")
+    data = pd.read_csv(file_name)
     data["Date"] = pd.to_datetime(data["Date"])
     data.set_index("Date", inplace=True)
     model = SARIMAX(data, order=(1, 1, 1), seasonal_order=(1, 1, 1, 7))
@@ -17,8 +17,8 @@ def ticket_forecast(data_folder="/data"):
         {"n_tickets": forecast.predicted_mean.values}, index=forecast_index
     )
     forecast_df["n_tickets"] = forecast_df["n_tickets"].round().astype(int)
-    forecast_df.to_csv(f"{data_folder}/forecast-data.csv")
+    forecast_df.to_csv("forecast-data.csv")
 
 
 if __name__ == "__main__":
-    ticket_forecast(data_folder="/data")
+    ticket_forecast(file_name="clean-data.csv")

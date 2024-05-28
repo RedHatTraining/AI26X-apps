@@ -6,6 +6,7 @@ from datetime import datetime
 
 
 def ingest_data(data_folder="/data"):
+    
     print("Commencing data ingestion.")
 
     s3_endpoint_url = os.environ.get("AWS_S3_ENDPOINT")
@@ -35,13 +36,13 @@ def ingest_data(data_folder="/data"):
         key = obj["Key"]
         file_name = os.path.basename(key)
         if re.match(r"^\d+\.csv$", file_name):
-            s3_client.download_file(s3_bucket_name, key, f"/{key}")
+            s3_client.download_file(s3_bucket_name, key, file_name)
             date = datetime.strptime(os.path.splitext(file_name)[0], "%Y%m%d").date()
-            tickets_df = pd.read_csv(f"{data_folder}/{file_name}")
+            tickets_df = pd.read_csv(file_name)
             n_tickets = len(tickets_df)
             new_row = pd.DataFrame({"Date": [date], "Tickets": [n_tickets]})
             df = pd.concat([df, new_row], ignore_index=True)
-            df.to_csv(f"{data_folder}/data.csv", index=False)
+            df.to_csv("data.csv", index=False)
 
     print("Finished data ingestion.")
 
