@@ -40,7 +40,7 @@ def print_msg(msg: str):
 # TODO: Create a component from the random_num function
 
 
-# TODO: Define a pipeline
+# TODO: Decorate function to define a pipeline
 def flipcoin_pipeline():
     flip = flip_coin_op()
     # TODO: Add pipeline logic
