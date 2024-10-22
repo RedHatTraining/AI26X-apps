@@ -32,7 +32,12 @@ def ingest_data(data_folder="/data"):
 
     df = pd.DataFrame(columns=["Date", "Tickets"])
 
-    for obj in response.get("Contents", []):
+    s3_objects = response.get("Contents", [])
+    if len(s3_objects) == 0:
+        print(f"Could not list S3 objects in {s3_bucket_name} bucket")
+        return
+
+    for obj in s3_objects:
         key = obj["Key"]
         file_name = os.path.basename(key)
         if re.match(r"^\d+\.csv$", file_name):
@@ -48,4 +53,4 @@ def ingest_data(data_folder="/data"):
 
 
 if __name__ == "__main__":
-    ingest_data(data_folder="/data")
+    ingest_data(data_folder="data")
