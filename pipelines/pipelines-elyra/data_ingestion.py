@@ -10,6 +10,7 @@ def ingest_data(data_folder="/data"):
     print("Commencing data ingestion.")
 
     s3_endpoint_url = os.environ.get("AWS_S3_ENDPOINT")
+    s3_endpoint_url = s3_endpoint_url if s3_endpoint_url.startswith('http') else 'http://' + s3_endpoint_url
     s3_access_key = os.environ.get("AWS_ACCESS_KEY_ID")
     s3_secret_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
     s3_bucket_name = os.environ.get("AWS_S3_BUCKET")
