@@ -106,6 +106,6 @@ if __name__ == "__main__":
     outfile = "pipeline.yaml"
     # TODO: compile the pipeline
     print(
-        "Pipeline Compiled.\n"
+        "Pipeline compiled.\n"
         f"Use the RHOAI dashboard to import the '{outfile}' file"
     )

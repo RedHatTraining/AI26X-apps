@@ -117,6 +117,6 @@ if __name__ == "__main__":
     # Compile the pipeline
     compiler.Compiler().compile(pipeline, outfile)
     print(
-        "Pipeline Compiled.\n"
+        "Pipeline compiled.\n"
         f"Use the RHOAI dashboard to import the '{outfile}' file"
     )
