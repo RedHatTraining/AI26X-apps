@@ -1,12 +1,19 @@
 import os
+import zipfile
+from datetime import datetime
+from typing import List
+
 import boto3
 import pandas as pd
-import re
-from datetime import datetime
+
+
+def decompress_files(zip_filename, output_dir) -> List[str]:
+    with zipfile.ZipFile(zip_filename, 'r') as zipf:
+        zipf.extractall(output_dir)
+        return [os.path.join(output_dir, name) for name in zipf.namelist()]
 
 
 def ingest_data(data_folder="/data"):
-    
     print("Commencing data ingestion.")
 
     s3_endpoint_url = os.environ.get("AWS_S3_ENDPOINT")
@@ -16,7 +23,7 @@ def ingest_data(data_folder="/data"):
     s3_bucket_name = os.environ.get("AWS_S3_BUCKET")
 
     print(
-        f"Downloading data"
+        f"Downloading data "
         f'from bucket "{s3_bucket_name}" '
         f"from S3 storage at {s3_endpoint_url}"
     )
@@ -28,27 +35,21 @@ def ingest_data(data_folder="/data"):
         aws_secret_access_key=s3_secret_key,
     )
 
-    # List objects within the specified bucket and folder
-    response = s3_client.list_objects_v2(Bucket=s3_bucket_name, Prefix=data_folder)
+    # Download the zip file
+    downloaded_file = 'data.zip'
+    s3_file_path = 'data/data.zip'
+    output_dir = 'dataset'
+    s3_client.download_file(s3_bucket_name, 'data/data.zip', downloaded_file)
 
     df = pd.DataFrame(columns=["Date", "Tickets"])
-
-    s3_objects = response.get("Contents", [])
-    if len(s3_objects) == 0:
-        print(f"Could not list S3 objects in {s3_bucket_name} bucket")
-        return
-
-    for obj in s3_objects:
-        key = obj["Key"]
-        file_name = os.path.basename(key)
-        if re.match(r"^\d+\.csv$", file_name):
-            s3_client.download_file(s3_bucket_name, key, file_name)
-            date = datetime.strptime(os.path.splitext(file_name)[0], "%Y%m%d").date()
-            tickets_df = pd.read_csv(file_name)
-            n_tickets = len(tickets_df)
-            new_row = pd.DataFrame({"Date": [date], "Tickets": [n_tickets]})
-            df = pd.concat([df, new_row], ignore_index=True)
-            df.to_csv("data.csv", index=False)
+    for f in decompress_files(downloaded_file, output_dir):
+        file_name = os.path.basename(f)
+        date = datetime.strptime(os.path.splitext(file_name)[0], "%Y%m%d").date()
+        tickets_df = pd.read_csv(f)
+        n_tickets = len(tickets_df)
+        new_row = pd.DataFrame({"Date": [date], "Tickets": [n_tickets]})
+        df = pd.concat([df, new_row], ignore_index=True)
+        df.to_csv("data.csv", index=False)
 
     print("Finished data ingestion.")
 
