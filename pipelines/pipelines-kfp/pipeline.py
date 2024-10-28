@@ -2,11 +2,11 @@ from typing import List, NamedTuple
 from kfp import dsl, compiler
 
 
-DATA_SCIENCE_IMAGE = "quay.io/modh/runtime-images:runtime-datascience-ubi9-python-3.9-2024a-20241011"  # noqa
 PYTHON_IMAGE = "registry.access.redhat.com/ubi9/python-39:1-197.1726696853"  # noqa
+DATA_SCIENCE_IMAGE = "quay.io/modh/runtime-images:runtime-datascience-ubi9-python-3.9-2024a-20241011"  # noqa
 
 
-@dsl.component(base_image=DATA_SCIENCE_IMAGE)
+# TODO: define the component to process the dataset
 def process_data() -> NamedTuple("outputs", texts=List[str], labels=List[int]):
     # Sample dataset
     dataset = [
@@ -46,7 +46,7 @@ def process_data() -> NamedTuple("outputs", texts=List[str], labels=List[int]):
     return outputs(texts, labels)
 
 
-@dsl.component(base_image=DATA_SCIENCE_IMAGE)
+# TODO: define the component to train the model
 def train_model(texts: list, labels: list) -> float:
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.naive_bayes import MultinomialNB
@@ -80,7 +80,7 @@ def train_model(texts: list, labels: list) -> float:
     return accuracy
 
 
-@dsl.component(base_image=PYTHON_IMAGE)
+# TODO: define the component to verify the accuracy of the model
 def verify_accuracy(accuracy: float, threshold: float):
     import sys
 
@@ -88,30 +88,24 @@ def verify_accuracy(accuracy: float, threshold: float):
         print("Model trained successfully")
         print(f"Accuracy: {accuracy * 100:.2f}%")
     else:
-        print("The model did not achieve the minimum accuracy of 70%.")
+        print(f"The model did not achieve the minimum accuracy of {threshold * 100:.2f}%.")
         print(f"Accuracy: {accuracy * 100:.2f}%")
         sys.exit(1)
 
 
-@dsl.pipeline(name="sentiment-analysis")
+# TODO: define the pipeline
 def pipeline():
-    # Load and preprocess data
-    data_processing_task = process_data()
-    texts = data_processing_task.outputs["texts"]
-    labels = data_processing_task.outputs["labels"]
+    # TODO: Load and preprocess data
 
-    # Train the model
-    train_task = train_model(texts=texts, labels=labels)
-    accuracy = train_task.output
+    # TODO: Train the model
 
-    # Verify the model accuracy
-    verify_accuracy(accuracy=accuracy, threshold=0.7)
+    # TODO: Verify the model accuracy
 
 
 if __name__ == "__main__":
-    # TODO: compile
     outfile = "pipeline.yaml"
-    compiler.Compiler().compile(pipeline, outfile)
+    # TODO: compile the pipeline
     print(
-        "Pipeline Compiled.\n" f"Use the RHOAI dashboard to import the '{outfile}' file"
+        "Pipeline Compiled.\n"
+        f"Use the RHOAI dashboard to import the '{outfile}' file"
     )

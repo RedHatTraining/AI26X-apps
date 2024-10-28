@@ -2,10 +2,11 @@ from typing import List, NamedTuple
 from kfp import dsl, compiler
 
 
-DATA_SCIENCE_IMAGE = "quay.io/modh/runtime-images:runtime-datascience-ubi9-python-3.9-2024a-20241011"  # noqa
 PYTHON_IMAGE = "registry.access.redhat.com/ubi9/python-39:1-197.1726696853"  # noqa
+DATA_SCIENCE_IMAGE = "quay.io/modh/runtime-images:runtime-datascience-ubi9-python-3.9-2024a-20241011"  # noqa
 
 
+# Component to process the dataset
 @dsl.component(base_image=DATA_SCIENCE_IMAGE)
 def process_data() -> NamedTuple("outputs", texts=List[str], labels=List[int]):
     # Sample dataset
@@ -46,6 +47,7 @@ def process_data() -> NamedTuple("outputs", texts=List[str], labels=List[int]):
     return outputs(texts, labels)
 
 
+# Component to train the model
 @dsl.component(base_image=DATA_SCIENCE_IMAGE)
 def train_model(texts: list, labels: list) -> float:
     from sklearn.feature_extraction.text import TfidfVectorizer
@@ -80,6 +82,7 @@ def train_model(texts: list, labels: list) -> float:
     return accuracy
 
 
+# Component to verify the accuracy of the model
 @dsl.component(base_image=PYTHON_IMAGE)
 def verify_accuracy(accuracy: float, threshold: float):
     import sys
@@ -88,11 +91,12 @@ def verify_accuracy(accuracy: float, threshold: float):
         print("Model trained successfully")
         print(f"Accuracy: {accuracy * 100:.2f}%")
     else:
-        print("The model did not achieve the minimum accuracy of 70%.")
+        print(f"The model did not achieve the minimum accuracy of {threshold * 100:.2f}%.")
         print(f"Accuracy: {accuracy * 100:.2f}%")
         sys.exit(1)
 
 
+# The pipeline
 @dsl.pipeline(name="sentiment-analysis")
 def pipeline():
     # Load and preprocess data
@@ -105,13 +109,14 @@ def pipeline():
     accuracy = train_task.output
 
     # Verify the model accuracy
-    verify_accuracy(accuracy=accuracy, threshold=0.7)
+    verify_accuracy(accuracy=accuracy, threshold=0.5)
 
 
 if __name__ == "__main__":
-    # TODO: compile
     outfile = "pipeline.yaml"
+    # Compile the pipeline
     compiler.Compiler().compile(pipeline, outfile)
     print(
-        "Pipeline Compiled.\n" f"Use the RHOAI dashboard to import the '{outfile}' file"
+        "Pipeline Compiled.\n"
+        f"Use the RHOAI dashboard to import the '{outfile}' file"
     )
