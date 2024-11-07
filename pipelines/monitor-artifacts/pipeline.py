@@ -17,7 +17,7 @@ DATA_SCIENCE_IMAGE = "quay.io/modh/runtime-images:runtime-datascience-ubi9-pytho
 
 @component(base_image=DATA_SCIENCE_IMAGE, packages_to_install=["psycopg2==2.9.10"])
 def query_db_data(
-    db_host: str, dataset: Output[Dataset]
+    db_host: str, dataset
 ):  # TODO: Output a dataset artifact
     import os
     import psycopg2
@@ -40,7 +40,7 @@ def query_db_data(
             rows = cursor.fetchall()
 
     # TODO: Write the data in CSV format to the output path
-    with open(dataset.path, "w") as f:
+    with open("...", "w") as f:
         f.write("comment,sentiment\n")
         for comment, sentiment in rows:
             f.write(f'"{comment}",{sentiment}\n')
@@ -72,7 +72,7 @@ def integrate_and_preprocess_data(  # TODO: Receive s3 and db datasets and outpu
         dataset.comment, dataset.label, test_size=0.2, random_state=83
     )
 
-    # Save train / test datasets
+    # TODO: Save train / test datasets
     train_data = pd.DataFrame({"text": X_train, "label": y_train})
     train_data.to_csv("...", index=False)
 

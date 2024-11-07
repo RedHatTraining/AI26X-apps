@@ -25,8 +25,6 @@ def query_db_data(db_host: str, dataset: Output[Dataset]):
     db_user = os.getenv("DB_USER")
     db_password = os.getenv("DB_PASSWORD")
 
-    print("credentials", db_name, db_user, db_password)
-
     # Connect to the database
     with psycopg2.connect(
         host=db_host,
@@ -39,7 +37,7 @@ def query_db_data(db_host: str, dataset: Output[Dataset]):
             cursor.execute("SELECT * FROM Sentiment")
             rows = cursor.fetchall()
 
-    # Write the data in CSV format
+    # Write the data in CSV format to the output path
     with open(dataset.path, "w") as f:
         f.write("comment,sentiment\n")
         for comment, sentiment in rows:
@@ -92,16 +90,16 @@ def train_model(dataset: Input[Dataset], model: Output[Model]):
     X_train = train_dataset.text
     y_train = train_dataset.label
 
-    # Create a pipeline with a TF-IDF Vectorizer and a Logistic Regression classifier
-    pipeline = make_pipeline(
+    # Create the model
+    classifier = make_pipeline(
         TfidfVectorizer(), MultinomialNB()  # Converts text into TF-IDF features
     )
 
     # Train the model
-    pipeline.fit(X_train, y_train)
+    classifier.fit(X_train, y_train)
 
     # Save the model
-    joblib.dump(pipeline, model.path)
+    joblib.dump(classifier, model.path)
 
 
 @component(base_image=DATA_SCIENCE_IMAGE)
@@ -132,12 +130,11 @@ def evaluate_model(
     # and the predictions
     score = accuracy_score(y_test, predictions)
 
+    classes = ["negative", "positive"]
+    conf_matrix = confusion_matrix(y_test, predictions).tolist()
     # Log metrics
     metrics.log_metric("accuracy", score)
-    classes = ["negative", "positive"]
-    classification_metrics.log_confusion_matrix(
-        classes, confusion_matrix(y_test, predictions).tolist()
-    )
+    classification_metrics.log_confusion_matrix(classes, conf_matrix)
 
     # Log a markdown report
     content = "# Sentiment Prediction Report on Test Set\n\n"
@@ -146,6 +143,7 @@ def evaluate_model(
         expected_class = classes[int(expected)]
         content += f"- Text: {text}, Prediction: {predicted_class}, Expected: {expected_class}\n"
 
+    # Write the report
     with open(report.path, "w") as f:
         f.write(content)
 
@@ -157,26 +155,27 @@ def pipeline(
 ) -> Model:
 
     # Get data from DB
-    gather_db_data_task = query_db_data(db_host=db_host)
-    gather_db_data_task.set_caching_options(False)
+    read_db_data_task = query_db_data(db_host=db_host)
+    read_db_data_task.set_caching_options(False)
+    # Inject database connection paramaters as environment variables
     kubernetes.use_secret_as_env(
-        gather_db_data_task,
+        read_db_data_task,
         secret_name="postgres",
         secret_key_to_env={"database-name": "DB_NAME"},
     )
     kubernetes.use_secret_as_env(
-        gather_db_data_task,
+        read_db_data_task,
         secret_name="postgres",
         secret_key_to_env={"database-user": "DB_USER"},
     )
     kubernetes.use_secret_as_env(
-        gather_db_data_task,
+        read_db_data_task,
         secret_name="postgres",
         secret_key_to_env={"database-password": "DB_PASSWORD"},
     )
 
-    # TODO: Get data from S3
-    import_data = importer(
+    # Get data from S3
+    read_s3_data_task = importer(
         artifact_uri=s3_data_path,
         artifact_class=Dataset,
         reimport=False,
@@ -185,7 +184,7 @@ def pipeline(
     # Integrate both datasets into one training dataset,
     # preprocess and clean data
     preprocess_task = integrate_and_preprocess_data(
-        s3_dataset=import_data.output, db_dataset=gather_db_data_task.output
+        s3_dataset=read_s3_data_task.output, db_dataset=read_db_data_task.output
     )
 
     # Train the model
