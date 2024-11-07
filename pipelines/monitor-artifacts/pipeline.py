@@ -16,7 +16,9 @@ DATA_SCIENCE_IMAGE = "quay.io/modh/runtime-images:runtime-datascience-ubi9-pytho
 
 
 @component(base_image=DATA_SCIENCE_IMAGE, packages_to_install=["psycopg2==2.9.10"])
-def query_db_data(db_host: str, dataset: Output[Dataset]):
+def query_db_data(
+    db_host: str, dataset: Output[Dataset]
+):  # TODO: Output a dataset artifact
     import os
     import psycopg2
 
@@ -24,8 +26,6 @@ def query_db_data(db_host: str, dataset: Output[Dataset]):
     db_name = os.getenv("DB_NAME")
     db_user = os.getenv("DB_USER")
     db_password = os.getenv("DB_PASSWORD")
-
-    print("credentials", db_name, db_user, db_password)
 
     # Connect to the database
     with psycopg2.connect(
@@ -39,7 +39,7 @@ def query_db_data(db_host: str, dataset: Output[Dataset]):
             cursor.execute("SELECT * FROM Sentiment")
             rows = cursor.fetchall()
 
-    # Write the data in CSV format
+    # TODO: Write the data in CSV format to the output path
     with open(dataset.path, "w") as f:
         f.write("comment,sentiment\n")
         for comment, sentiment in rows:
@@ -47,18 +47,18 @@ def query_db_data(db_host: str, dataset: Output[Dataset]):
 
 
 @component(base_image=DATA_SCIENCE_IMAGE)
-def preprocess_data(
-    s3_dataset: Input[Dataset],
-    db_dataset: Input[Dataset],
-    train_dataset: Output[Dataset],
-    test_dataset: Output[Dataset],
+def integrate_and_preprocess_data(  # TODO: Receive s3 and db datasets and output train and test datasets
+    s3_dataset,
+    db_dataset,
+    train_dataset,
+    test_dataset,
 ):
     import pandas as pd
     from sklearn.model_selection import train_test_split
 
-    # Read data from the two datasets
-    data_from_s3 = pd.read_csv(s3_dataset.path)
-    data_from_db = pd.read_csv(db_dataset.path)
+    # TODO: Read data from the two datasets
+    data_from_s3 = pd.read_csv("...")
+    data_from_db = pd.read_csv("...")
 
     # Combine rows into a single dataframe
     dataset = pd.concat([data_from_s3, data_from_db], axis=0)
@@ -74,14 +74,14 @@ def preprocess_data(
 
     # Save train / test datasets
     train_data = pd.DataFrame({"text": X_train, "label": y_train})
-    train_data.to_csv(train_dataset.path, index=False)
+    train_data.to_csv("...", index=False)
 
     test_data = pd.DataFrame({"text": X_test, "label": y_test})
-    test_data.to_csv(test_dataset.path, index=False)
+    test_data.to_csv("...", index=False)
 
 
 @component(base_image=DATA_SCIENCE_IMAGE)
-def train_model(dataset: Input[Dataset], model: Output[Model]):
+def train_model(dataset: Input[Dataset], model):  # TODO: Output a model
     import joblib
     import pandas as pd
     from sklearn.pipeline import make_pipeline
@@ -92,25 +92,25 @@ def train_model(dataset: Input[Dataset], model: Output[Model]):
     X_train = train_dataset.text
     y_train = train_dataset.label
 
-    # Create a pipeline with a TF-IDF Vectorizer and a Logistic Regression classifier
-    pipeline = make_pipeline(
+    # Create the model
+    classifier = make_pipeline(
         TfidfVectorizer(), MultinomialNB()  # Converts text into TF-IDF features
     )
 
     # Train the model
-    pipeline.fit(X_train, y_train)
+    classifier.fit(X_train, y_train)
 
-    # Save the model
-    joblib.dump(pipeline, model.path)
+    # TODO: Save the model
+    joblib.dump(classifier, "...")
 
 
 @component(base_image=DATA_SCIENCE_IMAGE)
 def evaluate_model(
     model: Input[Model],
     test_dataset: Input[Dataset],
-    metrics: Output[Metrics],
-    classification_metrics: Output[ClassificationMetrics],
-    report: Output[Markdown],
+    metrics,
+    classification_metrics,
+    report,
 ):
     import joblib
     import pandas as pd
@@ -132,12 +132,9 @@ def evaluate_model(
     # and the predictions
     score = accuracy_score(y_test, predictions)
 
-    # Log metrics
-    metrics.log_metric("accuracy", score)
     classes = ["negative", "positive"]
-    classification_metrics.log_confusion_matrix(
-        classes, confusion_matrix(y_test, predictions).tolist()
-    )
+    conf_matrix = confusion_matrix(y_test, predictions).tolist()
+    # TODO: Log metrics
 
     # Log a markdown report
     content = "# Sentiment Prediction Report on Test Set\n\n"
@@ -146,7 +143,8 @@ def evaluate_model(
         expected_class = classes[int(expected)]
         content += f"- Text: {text}, Prediction: {predicted_class}, Expected: {expected_class}\n"
 
-    with open(report.path, "w") as f:
+    # TODO: Write the report
+    with open("...", "w") as f:
         f.write(content)
 
 
@@ -157,35 +155,31 @@ def pipeline(
 ) -> Model:
 
     # Get data from DB
-    gather_db_data_task = query_db_data(db_host=db_host)
-    gather_db_data_task.set_caching_options(False)
+    read_db_data_task = query_db_data(db_host=db_host)
+    read_db_data_task.set_caching_options(False)
+    # TODO: Inject database connection paramaters as environment variables
     kubernetes.use_secret_as_env(
-        gather_db_data_task,
+        read_db_data_task,
         secret_name="postgres",
-        secret_key_to_env={"database-name": "DB_NAME"},
+        secret_key_to_env={},
     )
     kubernetes.use_secret_as_env(
-        gather_db_data_task,
+        read_db_data_task,
         secret_name="postgres",
-        secret_key_to_env={"database-user": "DB_USER"},
+        secret_key_to_env={},
     )
     kubernetes.use_secret_as_env(
-        gather_db_data_task,
+        read_db_data_task,
         secret_name="postgres",
-        secret_key_to_env={"database-password": "DB_PASSWORD"},
+        secret_key_to_env={},
     )
 
-    # Get data from S3
-    import_data = importer(
-        artifact_uri=s3_data_path,
-        artifact_class=Dataset,
-        reimport=False,
-    )
+    # TODO: Get data from S3
 
     # Integrate both datasets into one training dataset,
     # preprocess and clean data
-    preprocess_task = preprocess_data(
-        s3_dataset=import_data.output, db_dataset=gather_db_data_task.output
+    preprocess_task = integrate_and_preprocess_data(
+        s3_dataset=read_s3_data_task.output, db_dataset=read_db_data_task.output
     )
 
     # Train the model

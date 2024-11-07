@@ -47,7 +47,7 @@ def query_db_data(db_host: str, dataset: Output[Dataset]):
 
 
 @component(base_image=DATA_SCIENCE_IMAGE)
-def preprocess_data(
+def integrate_and_preprocess_data(
     s3_dataset: Input[Dataset],
     db_dataset: Input[Dataset],
     train_dataset: Output[Dataset],
@@ -175,7 +175,7 @@ def pipeline(
         secret_key_to_env={"database-password": "DB_PASSWORD"},
     )
 
-    # Get data from S3
+    # TODO: Get data from S3
     import_data = importer(
         artifact_uri=s3_data_path,
         artifact_class=Dataset,
@@ -184,7 +184,7 @@ def pipeline(
 
     # Integrate both datasets into one training dataset,
     # preprocess and clean data
-    preprocess_task = preprocess_data(
+    preprocess_task = integrate_and_preprocess_data(
         s3_dataset=import_data.output, db_dataset=gather_db_data_task.output
     )
 
