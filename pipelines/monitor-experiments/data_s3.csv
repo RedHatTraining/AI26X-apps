@@ -14,9 +14,9 @@ comment,sentiment
 "That is so cool,love it.",positive
 "I had a bad experience.",negative
 "That is awesome",positive
-"   I am worried about it.   ", negative
-"This is wonderful", positive
-"This is terrible, do not even try", negative
-"This is amazing!", positive
-"That is not my cup of tea.", negative
-"I like it so much   .", positive
+"   I am worried about it.   ",negative
+"This is wonderful",positive
+"This is terrible, do not even try",negative
+"This is amazing!",positive
+"That is not my cup of tea.",negative
+"I like it so much   .",positive
