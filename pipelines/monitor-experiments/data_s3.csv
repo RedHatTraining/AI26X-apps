@@ -1,0 +1,22 @@
+comment,sentiment
+"I love this!",positive
+"I hate this!",negative
+"This is awesome! ",positive
+"This is terrible!",negative
+"I really enjoyed the experience.",positive
+"I did not like the experience at all.  ",negative
+"  I love it.",positive
+"I hate it.",negative
+"I like it.",positive
+"I don't like it.",negative
+"I like this.",positive
+"   That is not good.",negative
+"That is so cool,love it.",positive
+"I had a bad experience.",negative
+"That is awesome",positive
+"   I am worried about it.   ", negative
+"This is wonderful", positive
+"This is terrible, do not even try", negative
+"This is amazing!", positive
+"That is not my cup of tea.", negative
+"I like it so much   .", positive
