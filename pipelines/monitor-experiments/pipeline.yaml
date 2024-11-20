@@ -113,17 +113,16 @@ deploymentSpec:
           \  import joblib\n    import pandas as pd\n    from sklearn.metrics import\
           \ confusion_matrix\n    from sklearn.metrics import accuracy_score\n\n \
           \   # Load the model\n    model = joblib.load(model.path)\n\n    # Load\
-          \ the test set\n    train_dataset = pd.read_csv(test_dataset.path)\n   \
-          \ X_test = train_dataset.text\n    y_test = train_dataset.label\n\n    #\
-          \ Predict the sentiment on the test set\n    predictions = model.predict(X_test)\n\
-          \n    # Compute accuracy comparing the expected results (y_test)\n    #\
-          \ and the predictions\n    score = accuracy_score(y_test, predictions)\n\
-          \n    classes = [\"negative\", \"positive\"]\n    conf_matrix = confusion_matrix(y_test,\
-          \ predictions).tolist()\n    # Log metrics\n    metrics.log_metric(\"accuracy\"\
-          , score)\n    classification_metrics.log_confusion_matrix(classes, conf_matrix)\n\
-          \n    # Log a markdown report\n    content = \"# Sentiment Prediction Report\
-          \ on Test Set\\n\\n\"\n    for text, prediction, expected in zip(X_test,\
-          \ predictions, y_test):\n        predicted_class = classes[int(prediction)]\n\
+          \ the test set\n    data = pd.read_csv(test_dataset.path)\n    X_test =\
+          \ data.text\n    y_test = data.label\n\n    # Predict the sentiment on the\
+          \ test set\n    predictions = model.predict(X_test)\n\n    # Compute accuracy\
+          \ comparing the expected results (y_test)\n    # and the predictions\n \
+          \   score = accuracy_score(y_test, predictions)\n\n    classes = [\"negative\"\
+          , \"positive\"]\n    conf_matrix = confusion_matrix(y_test, predictions).tolist()\n\
+          \    # Log metrics\n    metrics.log_metric(\"accuracy\", score)\n    classification_metrics.log_confusion_matrix(classes,\
+          \ conf_matrix)\n\n    # Log a markdown report\n    content = \"# Sentiment\
+          \ Prediction Report on Test Set\\n\\n\"\n    for text, prediction, expected\
+          \ in zip(X_test, predictions, y_test):\n        predicted_class = classes[int(prediction)]\n\
           \        expected_class = classes[int(expected)]\n        content += f\"\
           - Text: {text}, Prediction: {predicted_class}, Expected: {expected_class}\\\
           n\"\n\n    # Write the report\n    with open(report.path, \"w\") as f:\n\
@@ -133,6 +132,8 @@ deploymentSpec:
       importer:
         artifactUri:
           runtimeParameter: uri
+        metadata:
+          name: raw_data
         typeSchema:
           schemaTitle: system.Dataset
           schemaVersion: 0.0.1
@@ -170,7 +171,7 @@ deploymentSpec:
           positive\": 1, \"negative\": 0}\n    dataset[\"label\"] = dataset.sentiment.map(class_ids)\n\
           \n    # Generate train / test subsets\n    X_train, X_test, y_train, y_test\
           \ = train_test_split(\n        dataset.comment, dataset.label, test_size=0.2,\
-          \ random_state=83\n    )\n\n    # Save train / test datasets\n    train_data\
+          \ random_state=15\n    )\n\n    # Save train / test datasets\n    train_data\
           \ = pd.DataFrame({\"text\": X_train, \"label\": y_train})\n    train_data.to_csv(train_dataset.path,\
           \ index=False)\n\n    test_data = pd.DataFrame({\"text\": X_test, \"label\"\
           : y_test})\n    test_data.to_csv(test_dataset.path, index=False)\n\n"
@@ -201,21 +202,25 @@ deploymentSpec:
 
           '
         - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
-          \ *\n\ndef train_model(\n    classifier_name: str,\n    dataset: Input[Dataset],\n\
-          \    model: Output[Model],\n):\n    import joblib\n    import pandas as\
+          \ *\n\ndef train_model(\n    dataset: Input[Dataset],\n    model: Output[Model],\n\
+          \    classifier_name: str,\n):\n    import joblib\n    import pandas as\
           \ pd\n    from sklearn.pipeline import make_pipeline\n    from sklearn.feature_extraction.text\
           \ import TfidfVectorizer\n    from sklearn.naive_bayes import MultinomialNB\n\
-          \    from sklearn.linear_model import LogisticRegression\n\n    train_dataset\
-          \ = pd.read_csv(dataset.path)\n    X_train = train_dataset.text\n    y_train\
-          \ = train_dataset.label\n\n    # Available methods to implement a classifier\n\
-          \    methods = {\"MultinomialNB\": MultinomialNB, \"LogisticRegression\"\
-          : LogisticRegression}\n\n    # Select the classifier to use\n    if classifier_name\
-          \ not in methods:\n        raise RuntimeError(\n            f\"{classifier_name}\
-          \ is not a valid classifier. \"\n            \"Choose one of these: \"\n\
-          \            \", \".join(methods.keys())\n        )\n\n    method = methods[classifier_name]\n\
-          \n    # Create the model\n    classifier = make_pipeline(TfidfVectorizer(),\
-          \ method())\n\n    # Train the model\n    classifier.fit(X_train, y_train)\n\
-          \n    # Save the model\n    joblib.dump(classifier, model.path)\n\n"
+          \    from sklearn.linear_model import LogisticRegression\n    from sklearn.tree\
+          \ import DecisionTreeClassifier\n    from sklearn.svm import SVC\n\n   \
+          \ data = pd.read_csv(dataset.path)\n    X_train = data.text\n    y_train\
+          \ = data.label\n\n    # Available methods to implement a classifier\n  \
+          \  methods = {\n        \"MultinomialNB\": lambda: MultinomialNB(),\n  \
+          \      \"LogisticRegression\": lambda: LogisticRegression(),\n        \"\
+          DecisionTreeClassifier\": lambda: DecisionTreeClassifier(random_state=0),\n\
+          \        \"SVC\": lambda: SVC(kernel=\"linear\"),\n    }\n\n    # Select\
+          \ the classifier to use\n    if classifier_name not in methods:\n      \
+          \  raise RuntimeError(\n            f\"{classifier_name} is not a valid\
+          \ classifier. \"\n            \"Choose one of: \" + (\", \".join(methods.keys()))\n\
+          \        )\n\n    method = methods[classifier_name]\n\n    # Create the\
+          \ model\n    classifier = make_pipeline(TfidfVectorizer(), method())\n\n\
+          \    # Train the model\n    classifier.fit(X_train, y_train)\n\n    # Save\
+          \ the model\n    joblib.dump(classifier, model.path)\n\n"
         image: quay.io/modh/runtime-images:runtime-datascience-ubi9-python-3.9-2024a-20241011
 pipelineInfo:
   name: pipeline

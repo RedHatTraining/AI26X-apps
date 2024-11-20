@@ -19,4 +19,21 @@ comment,sentiment
 "This is terrible, do not even try",negative
 "This is amazing!",positive
 "That is not my cup of tea.",negative
-"I like it so much   .",positive
+“Absolutely love it!!!!”,positive
+“This is the worst thing I have ever seen”,negative
+“I'm so glad I got this!”,positive
+“this is unbelievably bad.”,negative
+“I can't believe how much I hate this.”,negative
+“This is the best experience.”,positive
+“I'm verfy disappointed.”,negative
+“I'm so excited about this!”,positive
+"It made my day! ",positive
+"It ruined my whole day.",negative
+"Totally recommend this.",positive
+"I cannot recommend this to anyone.",negative
+"Great value for the price.",positive
+"Completely not worth it.",negative
+"Fantastic experience overall!",positive
+"Such a disappointing experience.",negative
+"I love how it looks.",positive
+"It is so ugly.",negative

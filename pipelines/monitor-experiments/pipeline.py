@@ -34,7 +34,7 @@ def preprocess_data(
 
     # Generate train / test subsets
     X_train, X_test, y_train, y_test = train_test_split(
-        dataset.comment, dataset.label, test_size=0.2, random_state=83
+        dataset.comment, dataset.label, test_size=0.2, random_state=15
     )
 
     # Save train / test datasets
@@ -47,9 +47,9 @@ def preprocess_data(
 
 @component(base_image=DATA_SCIENCE_IMAGE)
 def train_model(
-    classifier_name: str,
     dataset: Input[Dataset],
     model: Output[Model],
+    classifier_name: str,
 ):
     import joblib
     import pandas as pd
@@ -57,20 +57,26 @@ def train_model(
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.naive_bayes import MultinomialNB
     from sklearn.linear_model import LogisticRegression
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn.svm import SVC
 
-    train_dataset = pd.read_csv(dataset.path)
-    X_train = train_dataset.text
-    y_train = train_dataset.label
+    data = pd.read_csv(dataset.path)
+    X_train = data.text
+    y_train = data.label
 
     # Available methods to implement a classifier
-    methods = {"MultinomialNB": MultinomialNB, "LogisticRegression": LogisticRegression}
+    methods = {
+        "MultinomialNB": lambda: MultinomialNB(),
+        "LogisticRegression": lambda: LogisticRegression(),
+        "DecisionTreeClassifier": lambda: DecisionTreeClassifier(random_state=0),
+        "SVC": lambda: SVC(kernel="linear"),
+    }
 
     # Select the classifier to use
     if classifier_name not in methods:
         raise RuntimeError(
             f"{classifier_name} is not a valid classifier. "
-            "Choose one of these: "
-            ", ".join(methods.keys())
+            "Choose one of: " + (", ".join(methods.keys()))
         )
 
     method = methods[classifier_name]
@@ -102,9 +108,9 @@ def evaluate_model(
     model = joblib.load(model.path)
 
     # Load the test set
-    train_dataset = pd.read_csv(test_dataset.path)
-    X_test = train_dataset.text
-    y_test = train_dataset.label
+    data = pd.read_csv(test_dataset.path)
+    X_test = data.text
+    y_test = data.label
 
     # Predict the sentiment on the test set
     predictions = model.predict(X_test)
@@ -142,6 +148,7 @@ def pipeline(
         artifact_uri=s3_data_path,
         artifact_class=Dataset,
         reimport=False,
+        metadata={"name": "raw_data"}
     )
 
     # Integrate both datasets into one training dataset,
