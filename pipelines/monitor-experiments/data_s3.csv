@@ -1,0 +1,39 @@
+comment,sentiment
+"I love this!",positive
+"I hate this!",negative
+"This is awesome! ",positive
+"This is terrible!",negative
+"I really enjoyed the experience.",positive
+"I did not like the experience at all.  ",negative
+"  I love it.",positive
+"I hate it.",negative
+"I like it.",positive
+"I don't like it.",negative
+"I like this.",positive
+"   That is not good.",negative
+"That is so cool,love it.",positive
+"I had a bad experience.",negative
+"That is awesome",positive
+"   I am worried about it.   ",negative
+"This is wonderful",positive
+"This is terrible, do not even try",negative
+"This is amazing!",positive
+"That is not my cup of tea.",negative
+“Absolutely love it!!!!”,positive
+“This is the worst thing I have ever seen”,negative
+“I'm so glad I got this!”,positive
+“this is unbelievably bad.”,negative
+“I can't believe how much I hate this.”,negative
+“This is the best experience.”,positive
+“I'm verfy disappointed.”,negative
+“I'm so excited about this!”,positive
+"It made my day! ",positive
+"It ruined my whole day.",negative
+"Totally recommend this.",positive
+"I cannot recommend this to anyone.",negative
+"Great value for the price.",positive
+"Completely not worth it.",negative
+"Fantastic experience overall!",positive
+"Such a disappointing experience.",negative
+"I love how it looks.",positive
+"It is so ugly.",negative
