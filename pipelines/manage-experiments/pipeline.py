@@ -140,7 +140,7 @@ def evaluate_model(
 @pipeline
 def pipeline(
     classifier_name: str = "MultinomialNB",
-    s3_data_path: str = "s3://monitor-experiments/data/data_s3.csv",
+    s3_data_path: str = "s3://manage-experiments/data/data_s3.csv",
 ) -> Model:
 
     # Get data from S3
