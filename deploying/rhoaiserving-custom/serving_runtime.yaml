@@ -1,9 +1,9 @@
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
-labels:
-  opendatahub.io/dashboard: "true"
 metadata:
   name: sklearn-server
+  labels:
+    opendatahub.io/dashboard: "true"
 spec:
   annotations:
     prometheus.kserve.io/port: '8080'
