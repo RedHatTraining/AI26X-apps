@@ -55,18 +55,16 @@ def prepare_diabetes_request():
 def send_inference_request(url, body, token=None):
     headers = {"Content-Type": "application/json"}
     if token is not None:
-        headers["Authorization"]: f"Bearer {token}"
+        headers["Authorization"] = f"Bearer {token}"
     return requests.post(url, json=body, headers=headers, verify=False)
 
 
-def print_curl_request(url, tokens):
-    # Input text for sentiment analysis
-    text = "This model is great!"
-
+def print_curl_request(url, query):
     print(
         f'\n{BOLD}{GREEN}Inferece request for the {url} url, using "{query}" as input.{RESET}\n'
     )
     # Tokenize the input text
+    tokens = tokenize(query)
 
     # Define request and print
     body = f"""'{{"instances": [
@@ -83,4 +81,4 @@ def print_curl_request(url, tokens):
 if __name__ == "__main__":
     query = sys.argv[2]
     url = sys.argv[1]
-    gen_request(url, query)
+    print_curl_request(url, query)
