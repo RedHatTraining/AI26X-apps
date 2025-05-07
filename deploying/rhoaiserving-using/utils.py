@@ -55,7 +55,7 @@ def prepare_diabetes_request():
 def send_inference_request(url, body, token=None):
     headers = {"Content-Type": "application/json"}
     if token is not None:
-        headers["Authorization"]: f"Bearer {token}"
+        headers["Authorization"] = f"Bearer {token}"
     return requests.post(url, json=body, headers=headers, verify=False)
 
 
