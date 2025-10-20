@@ -1,4 +1,8 @@
-# Server Predictive Maintenance Exercise
+# Materials for `workbench-working` guided exercise:
+
+**Scenario**: Server Predictive Maintenance
+
+**GE**: https://github.com/RedHatTraining/AI0015L/blob/main/content/workbench/working/ge.adoc
 
 ## Overview
 
