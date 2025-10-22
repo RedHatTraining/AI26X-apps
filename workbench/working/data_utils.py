@@ -23,7 +23,7 @@ from sklearn.preprocessing import StandardScaler
 
 
 DEFAULT_SERVER_METRICS_FILE = Path(__file__).parent / "server_metrics.csv"
-DEFAULT_SCALER_FILE = Path(__file__).parent / "scaler.pkl"
+DEFAULT_SCALER_FILE = Path(__file__).parent / "data_scaler.pkl"
 
 
 def load_data(filepath: Path | str = DEFAULT_SERVER_METRICS_FILE):
@@ -35,7 +35,7 @@ def load_data(filepath: Path | str = DEFAULT_SERVER_METRICS_FILE):
 
 
 def preprocess_features(
-    df, scaler=None, save_scaler=False, scaler_path=DEFAULT_SCALER_FILE
+    df, scaler=None, save_scaler=True, scaler_path=DEFAULT_SCALER_FILE
 ):
     """
     Preprocess the features for model training or inference.
@@ -87,7 +87,7 @@ def preprocess_features(
     X_scaled = pd.DataFrame(X_scaled, columns=X_encoded.columns)
 
     print(f"Preprocessed features shape: {X_scaled.shape}")
-    return X_scaled, y, scaler
+    return X_scaled, y
 
 
 def load_scaler(scaler_path=DEFAULT_SCALER_FILE):
@@ -195,7 +195,7 @@ def prepare_data(input_file=DEFAULT_SERVER_METRICS_FILE):
     return X_train, X_test, y_train, y_test, scaler
 
 
-def preprocess_for_inference(df, scaler_path=DEFAULT_SCALER_FILE):
+def preprocess_for_inference(df, scaler):
     """
     Preprocess data for model inference using saved scaler.
 
@@ -206,8 +206,7 @@ def preprocess_for_inference(df, scaler_path=DEFAULT_SCALER_FILE):
     Returns:
         Preprocessed features ready for prediction
     """
-    scaler = load_scaler(scaler_path)
-    X_scaled, _, _ = preprocess_features(df, scaler=scaler)
+    X_scaled, _, _ = preprocess_features(df, save_scaler=False)
     return X_scaled
 
 
