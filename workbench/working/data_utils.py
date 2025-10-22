@@ -111,6 +111,38 @@ def split_data(X, y, test_size=0.2, random_state=42):
     return X_train, X_test, y_train, y_test
 
 
+def calculate_class_weights(y_train):
+    """
+    Calculate class weights to handle imbalanced datasets.
+
+    The weights are inversely proportional to class frequencies.
+    This helps the model pay more attention to the minority class.
+
+    Args:
+        y_train: Training labels (pandas Series or numpy array)
+
+    Returns:
+        Dictionary mapping class labels to weights
+    """
+    # Count samples per class
+    n_samples = len(y_train)
+    n_classes = len(y_train.unique())
+
+    # Calculate weight for each class
+    class_weights = {}
+    for class_label in sorted(y_train.unique()):
+        n_class_samples = (y_train == class_label).sum()
+        weight = n_samples / (n_classes * n_class_samples)
+        class_weights[class_label] = weight
+
+    print("Class weights calculated:")
+    for class_label, weight in class_weights.items():
+        class_name = "No failure" if class_label == 0 else "Failure"
+        print(f"  Class {class_label} ({class_name}): {weight:.4f}")
+
+    return class_weights
+
+
 def save_prepared_data(X_train, X_test, y_train, y_test):
     """Save the prepared datasets to CSV files."""
     print("Saving prepared datasets...")
