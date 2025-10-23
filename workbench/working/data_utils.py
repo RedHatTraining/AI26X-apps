@@ -35,54 +35,38 @@ def load_data(filepath: Path | str = DEFAULT_SERVER_METRICS_FILE):
 
 
 def preprocess_features(
-    df, scaler=None, save_scaler=True, scaler_path=DEFAULT_SCALER_FILE
+    df, scaler_path=DEFAULT_SCALER_FILE
 ):
     """
     Preprocess the features for model training or inference.
+    Saves the scaler to be used later during inference
 
     Args:
         df: DataFrame with server metrics
-        scaler: Optional pre-fitted StandardScaler for inference
-        save_scaler: If True, save the fitted scaler to disk
-        scaler_path: Path to save/load the scaler
+        scaler_path: Path to save the scaler
 
     Returns:
         Tuple of (X_scaled, y, scaler) where:
             - X_scaled: Preprocessed features
             - y: Target variable (None if not in df)
-            - scaler: Fitted StandardScaler
     """
     print("Preprocessing features...")
 
-    # Check if target exists
-    has_target = "failure_within_48h" in df.columns
-
     # Separate features and target
-    if has_target:
-        X = df.drop(["failure_within_48h", "server_id", "timestamp"], axis=1)
-        y = df["failure_within_48h"]
-    else:
-        # For inference, these columns may not exist
-        cols_to_drop = [col for col in ["server_id", "timestamp"] if col in df.columns]
-        X = df.drop(cols_to_drop, axis=1)
-        y = None
+    X = df.drop(["failure_within_48h", "server_id", "timestamp"], axis=1)
+    y = df["failure_within_48h"]
 
     # One-hot encode categorical features
     X_encoded = pd.get_dummies(X, columns=["workload_type"])
 
     # Scale features
-    if scaler is None:
-        # Training mode: fit new scaler
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X_encoded)
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X_encoded)
 
-        if save_scaler:
-            print(f"Saving scaler to {scaler_path}...")
-            with open(scaler_path, "wb") as f:
-                pickle.dump(scaler, f)
-    else:
-        # Inference mode: use provided scaler
-        X_scaled = scaler.transform(X_encoded)
+    # Save scaler for later use in inference
+    print(f"Saving scaler to {scaler_path}...")
+    with open(scaler_path, "wb") as f:
+        pickle.dump(scaler, f)
 
     X_scaled = pd.DataFrame(X_scaled, columns=X_encoded.columns)
 
@@ -90,9 +74,45 @@ def preprocess_features(
     return X_scaled, y
 
 
+def preprocess_for_inference(df):
+    """
+    Preprocess data for model inference using saved scaler.
+
+    Args:
+        df: DataFrame with server metrics (without target variable)
+
+    Returns:
+        Preprocessed features ready for prediction
+    """
+    # For inference, these columns may not exist
+    cols_to_drop = [col for col in ["server_id", "timestamp"] if col in df.columns]
+    X = df.drop(cols_to_drop, axis=1)
+
+    # One-hot encode categorical features
+    X_encoded = pd.get_dummies(X, columns=["workload_type"])
+
+    # Scale features using StandardScaler
+    scaler = load_scaler()
+
+    # Ensure all expected columns are present (add missing ones with zeros)
+    expected_features = scaler.feature_names_in_
+    for col in expected_features:
+        if col not in X_encoded.columns:
+            X_encoded[col] = 0
+
+    # Reorder columns to match training order
+    X_encoded = X_encoded[expected_features]
+
+    X_scaled = scaler.transform(X_encoded)
+
+    X_scaled = pd.DataFrame(X_scaled, columns=X_encoded.columns)
+
+    return X_scaled
+
+
+
 def load_scaler(scaler_path=DEFAULT_SCALER_FILE):
     """Load a saved StandardScaler from disk."""
-    print(f"Loading scaler from {scaler_path}...")
     with open(scaler_path, "rb") as f:
         scaler = pickle.load(f)
     return scaler
@@ -176,7 +196,7 @@ def prepare_data(input_file=DEFAULT_SERVER_METRICS_FILE):
     df = load_data(input_file)
 
     # Preprocess features (fit and save scaler)
-    X, y, scaler = preprocess_features(df, save_scaler=True)
+    X, y = preprocess_features(df)
 
     # Split data
     X_train, X_test, y_train, y_test = split_data(X, y)
@@ -192,22 +212,7 @@ def prepare_data(input_file=DEFAULT_SERVER_METRICS_FILE):
     print("  - scaler.pkl")
     print("=" * 60)
 
-    return X_train, X_test, y_train, y_test, scaler
-
-
-def preprocess_for_inference(df, scaler):
-    """
-    Preprocess data for model inference using saved scaler.
-
-    Args:
-        df: DataFrame with server metrics (without target variable)
-        scaler_path: Path to saved scaler file
-
-    Returns:
-        Preprocessed features ready for prediction
-    """
-    X_scaled, _, _ = preprocess_features(df, save_scaler=False)
-    return X_scaled
+    return X_train, X_test, y_train, y_test
 
 
 if __name__ == "__main__":
