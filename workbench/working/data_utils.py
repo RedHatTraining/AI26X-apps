@@ -11,12 +11,9 @@ This module provides functions for data loading, preprocessing, and splitting.
 # ]
 # ///
 
-import os
 import pickle
 from pathlib import Path
-from typing import Union
 
-import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -34,9 +31,7 @@ def load_data(filepath: Path | str = DEFAULT_SERVER_METRICS_FILE):
     return df
 
 
-def preprocess_features(
-    df, scaler_path=DEFAULT_SCALER_FILE
-):
+def preprocess_features(df, scaler_path=DEFAULT_SCALER_FILE):
     """
     Preprocess the features for model training or inference.
     Saves the scaler to be used later during inference
@@ -108,7 +103,6 @@ def preprocess_for_inference(df):
     X_scaled = pd.DataFrame(X_scaled, columns=X_encoded.columns)
 
     return X_scaled
-
 
 
 def load_scaler(scaler_path=DEFAULT_SCALER_FILE):
