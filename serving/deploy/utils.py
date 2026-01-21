@@ -25,12 +25,44 @@ def tokenize(text: str):
     return {"input_ids": input_ids, "attention_mask": attention_mask}
 
 
-def prepare_distilbert_request(tokens):
+def old_prepare_distilbert_request(tokens):
+    """
+    DEPRECATED: TensorFlow Serving v1 API format (legacy)
+    This format is still supported by OpenVINO Model Server for backward compatibility,
+    but KServe V2 API is recommended for new deployments.
+
+    Endpoint: /v1/models/<model>:predict
+    """
     return {
         "instances": [
             {
                 "input_ids": tokens["input_ids"],
                 "attention_mask": tokens["attention_mask"],
+            }
+        ]
+    }
+
+
+def prepare_distilbert_request(tokens):
+    """
+    KServe V2 API format (recommended)
+    This is the current standard API for model inference in RHOAI 2.25.
+
+    Endpoint: /v2/models/<model>/infer
+    """
+    return {
+        "inputs": [
+            {
+                "name": "input_ids",
+                "shape": [1, 128],
+                "datatype": "INT64",
+                "data": tokens["input_ids"]
+            },
+            {
+                "name": "attention_mask",
+                "shape": [1, 128],
+                "datatype": "INT64",
+                "data": tokens["attention_mask"]
             }
         ]
     }
@@ -53,16 +85,24 @@ def send_inference_request(url, body, token=None):
 
 def print_curl_request(url, query):
     print(
-        f'\n{BOLD}{GREEN}Inferece request for the {url} url, using "{query}" as input.{RESET}\n'
+        f'\n{BOLD}{GREEN}Inference request for the {url} url, using "{query}" as input.{RESET}\n'
     )
     # Tokenize the input text
     tokens = tokenize(query)
 
-    # Define request and print
-    body = f"""'{{"instances": [
+    # Define request in KServe V2 format and print
+    body = f"""'{{"inputs": [
         {{
-            "input_ids": [{", ".join([str(i) for i in tokens["input_ids"]])}],
-            "attention_mask": [{", ".join([str(i) for i in tokens["attention_mask"]])}]
+            "name": "input_ids",
+            "shape": [1, 128],
+            "datatype": "INT64",
+            "data": [{", ".join([str(i) for i in tokens["input_ids"]])}]
+        }},
+        {{
+            "name": "attention_mask",
+            "shape": [1, 128],
+            "datatype": "INT64",
+            "data": [{", ".join([str(i) for i in tokens["attention_mask"]])}]
         }}
     ]}}'
     """
