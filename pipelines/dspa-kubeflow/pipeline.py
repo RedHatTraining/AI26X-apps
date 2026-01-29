@@ -1,13 +1,12 @@
 from typing import List, NamedTuple
 from kfp import dsl, compiler
 
-
-PYTHON_IMAGE = "registry.access.redhat.com/ubi9/python-39:1-197.1726696853"  # noqa
-DATA_SCIENCE_IMAGE = "quay.io/modh/runtime-images:runtime-datascience-ubi9-python-3.9-2024a-20241011"  # noqa
+PYTHON_IMAGE = "registry.access.redhat.com/ubi10/python-312-minimal@sha256:d68ed3504e63368dba411301af9df8d20d767864a61b58fe47ec7195bb8a4d13"  # noqa
+DATA_SCIENCE_IMAGE = "registry.redhat.io/rhoai/odh-pipeline-runtime-datascience-cpu-py312-rhel9@sha256:81293ba4e8adaed7e90ceaf03852739169f6fae7c98d1b41a953c5bf26b76522"  # noqa
 
 
 # TODO: define the component to process the dataset
-def process_data() -> NamedTuple("outputs", texts=List[str], labels=List[int]):
+def process_data() -> NamedTuple("outputs", [("texts", List[str]), ("labels", List[int])]):
     # Sample dataset
     dataset = [
         ("I love this!", "positive"),
@@ -44,7 +43,6 @@ def process_data() -> NamedTuple("outputs", texts=List[str], labels=List[int]):
     # Return texts and labels
     outputs = NamedTuple("outputs", texts=List[str], labels=List[int])
     return outputs(texts, labels)
-
 
 # TODO: define the component to train the model
 def train_model(texts: list, labels: list) -> float:
@@ -91,7 +89,6 @@ def verify_accuracy(accuracy: float, threshold: float):
         print(f"The model did not achieve the minimum accuracy of {threshold * 100:.2f}%.")
         print(f"Accuracy: {accuracy * 100:.2f}%")
         sys.exit(1)
-
 
 # TODO: define the pipeline
 def pipeline():

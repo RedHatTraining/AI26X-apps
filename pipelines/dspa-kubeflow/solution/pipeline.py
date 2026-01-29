@@ -2,13 +2,12 @@ from typing import List, NamedTuple
 from kfp import dsl, compiler
 
 
-PYTHON_IMAGE = "registry.access.redhat.com/ubi9/python-39:1-197.1726696853"  # noqa
-DATA_SCIENCE_IMAGE = "quay.io/modh/runtime-images:runtime-datascience-ubi9-python-3.9-2024a-20241011"  # noqa
-
+PYTHON_IMAGE = "registry.access.redhat.com/ubi10/python-312-minimal@sha256:d68ed3504e63368dba411301af9df8d20d767864a61b58fe47ec7195bb8a4d13"  # noqa
+DATA_SCIENCE_IMAGE = "registry.redhat.io/rhoai/odh-pipeline-runtime-datascience-cpu-py312-rhel9@sha256:81293ba4e8adaed7e90ceaf03852739169f6fae7c98d1b41a953c5bf26b76522"  # noqa
 
 # Component to process the dataset
 @dsl.component(base_image=DATA_SCIENCE_IMAGE)
-def process_data() -> NamedTuple("outputs", texts=List[str], labels=List[int]):
+def process_data() -> NamedTuple("outputs", [("texts", List[str]), ("labels", List[int])]):
     # Sample dataset
     dataset = [
         ("I love this!", "positive"),
