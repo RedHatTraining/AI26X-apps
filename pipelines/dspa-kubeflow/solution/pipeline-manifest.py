@@ -129,6 +129,6 @@ if __name__ == "__main__":
     )
     print(
         "Pipeline compiled.\n"
-        f"Use the RHOAI dashboard to import the '{outfile}' file"
+        f"Use the Kubernetes API to import the '{outfile}' manifest file"
     )
 
