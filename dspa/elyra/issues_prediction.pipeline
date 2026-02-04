@@ -19,6 +19,15 @@
           "runtime": "Data Science Pipelines",
           "pipeline_defaults": {
             "runtime_image": "quay.io/modh/runtime-images@sha256:c26e71e37d93378cd730d3cbad5744895b7c9a6ee9a0682ab95c40bad8a0062a",
+            "env_vars": [],
+            "kubernetes_pod_annotations": [],
+            "kubernetes_tolerations": [],
+            "kubernetes_shared_mem_size": {},
+            "mounted_volumes": [],
+            "kubernetes_pod_labels": [],
+            "pip_packages": [
+              "statsmodels"
+            ],
             "kubernetes_secrets": [
               {
                 "env_var": "AWS_ACCESS_KEY_ID",
