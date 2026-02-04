@@ -18,7 +18,29 @@
           "name": "issues_prediction",
           "runtime": "Data Science Pipelines",
           "pipeline_defaults": {
-            "runtime_image": "quay.io/modh/runtime-images@sha256:c26e71e37d93378cd730d3cbad5744895b7c9a6ee9a0682ab95c40bad8a0062a"
+            "runtime_image": "quay.io/modh/runtime-images@sha256:c26e71e37d93378cd730d3cbad5744895b7c9a6ee9a0682ab95c40bad8a0062a",
+            "kubernetes_secrets": [
+              {
+                "env_var": "AWS_ACCESS_KEY_ID",
+                "name": "s3-minio",
+                "key": "AWS_ACCESS_KEY_ID"
+              },
+              {
+                "env_var": "AWS_SECRET_ACCESS_KEY",
+                "name": "s3-minio",
+                "key": "AWS_SECRET_ACCESS_KEY"
+              },
+              {
+                "env_var": "AWS_S3_ENDPOINT",
+                "name": "s3-minio",
+                "key": "AWS_S3_ENDPOINT"
+              },
+              {
+                "env_var": "AWS_S3_BUCKET",
+                "name": "s3-minio",
+                "key": "AWS_S3_BUCKET"
+              }
+            ]
           }
         }
       },
