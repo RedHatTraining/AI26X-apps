@@ -1,0 +1,12 @@
+# Custom runtime image for Elyra pipelines with statsmodels
+# This image extends the Standard Data Science runtime with statsmodels
+# for time series forecasting using SARIMAX models.
+
+FROM quay.io/modh/runtime-images@sha256:c26e71e37d93378cd730d3cbad5744895b7c9a6ee9a0682ab95c40bad8a0062a
+
+# Install statsmodels for time series analysis (SARIMAX forecasting)
+RUN pip install --no-cache-dir statsmodels==0.14.1
+
+# Fix permissions for OpenShift compatibility
+RUN chmod -R g+w /opt/app-root/lib/python3.11/site-packages && \
+    fix-permissions /opt/app-root -P
