@@ -2,11 +2,13 @@
 # This image extends the Standard Data Science runtime with statsmodels
 # for time series forecasting using SARIMAX models.
 
-FROM quay.io/modh/runtime-images@sha256:c26e71e37d93378cd730d3cbad5744895b7c9a6ee9a0682ab95c40bad8a0062a
+# runtime-datascience-ubi9-python-3.11-20250827
+FROM quay.io/modh/runtime-images@sha256:9a25d14fcc8659bcf9c64918fb2589e03cda223fc55c19fa8337274511d9cf32
 
-# Install statsmodels for time series analysis (SARIMAX forecasting)
-RUN pip install --no-cache-dir statsmodels==0.14.1
+RUN pip install --no-cache-dir statsmodels==0.14.4
 
-# Fix permissions for OpenShift compatibility
-RUN chmod -R g+w /opt/app-root/lib/python3.11/site-packages && \
-    fix-permissions /opt/app-root -P
+# Fix permissions on newly installed packages for OpenShift compatibility
+RUN chmod -R g+w /opt/app-root/lib/python3.11/site-packages/statsmodels \
+                 /opt/app-root/lib/python3.11/site-packages/statsmodels-0.14.4.dist-info \
+                 /opt/app-root/lib/python3.11/site-packages/patsy \
+                 /opt/app-root/lib/python3.11/site-packages/patsy-1.0.2.dist-info

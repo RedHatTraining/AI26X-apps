@@ -6,7 +6,7 @@ set -euo pipefail
 # Image registry and name
 IMAGE_REGISTRY="${IMAGE_REGISTRY:-quay.io/redhattraining}"
 IMAGE_NAME="dspa-elyra-runtime"
-IMAGE_TAG="${IMAGE_TAG:-v1.0}"
+IMAGE_TAG="${IMAGE_TAG:-v2.0}"
 IMAGE="${IMAGE_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
 
 echo "Building image: ${IMAGE}"
