@@ -16,9 +16,9 @@
         "runtime_type": "KUBEFLOW_PIPELINES",
         "properties": {
           "name": "issues_prediction",
-          "runtime": "Data Science Pipelines",
+          "runtime": "Pipelines",
           "pipeline_defaults": {
-            "runtime_image": "registry.ocp4.example.com:8443/redhattraining/dspa-elyra-runtime:v1.0",
+            "runtime_image": "registry.lab.example.com:8443/redhattraining/dspa-elyra-runtime:v2.0",
             "env_vars": [],
             "kubernetes_pod_annotations": [],
             "kubernetes_tolerations": [],
