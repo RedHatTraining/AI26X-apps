@@ -28,22 +28,22 @@
             "kubernetes_secrets": [
               {
                 "env_var": "AWS_ACCESS_KEY_ID",
-                "name": "s3-minio",
+                "name": "s3-storage",
                 "key": "AWS_ACCESS_KEY_ID"
               },
               {
                 "env_var": "AWS_SECRET_ACCESS_KEY",
-                "name": "s3-minio",
+                "name": "s3-storage",
                 "key": "AWS_SECRET_ACCESS_KEY"
               },
               {
                 "env_var": "AWS_S3_ENDPOINT",
-                "name": "s3-minio",
+                "name": "s3-storage",
                 "key": "AWS_S3_ENDPOINT"
               },
               {
                 "env_var": "AWS_S3_BUCKET",
-                "name": "s3-minio",
+                "name": "s3-storage",
                 "key": "AWS_S3_BUCKET"
               }
             ]
